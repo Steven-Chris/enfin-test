@@ -7,6 +7,7 @@ const AddBook = () => {
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
   const [books, setBooks] = useState([]);
+  const [isEditId, setIsEditId] = useState("");
 
   const fetchBooks = async () => {
     try {
@@ -50,14 +51,30 @@ const AddBook = () => {
     }
 
     try {
-      const response = await axios.post(`${BASE_URL}/add`, form);
-      console.log("Form submitted successfully:", response.data);
+      if (isEditId) {
+        await editBook();
+        setIsEditId("");
+      } else {
+        await addBook();
+      }
       setForm({});
       setErrors({});
       fetchBooks();
     } catch (error) {
       console.error("Error submitting form:", error);
     }
+  };
+
+  const addBook = async () => {
+    const response = await axios.post(`${BASE_URL}/add`, form);
+    console.log("Form submitted successfully:", response.data);
+    return response.data;
+  };
+
+  const editBook = async () => {
+    const response = await axios.put(`${BASE_URL}/edit?id=${isEditId}`, form);
+    console.log("Book edited successfully:", response.data);
+    return response.data;
   };
 
   const deleteBook = async (id) => {
@@ -72,8 +89,9 @@ const AddBook = () => {
     }
   };
 
-  const editBook = (book) => {
+  const setEditForm = (book) => {
     setForm(book);
+    setIsEditId(book._id);
   };
 
   const renderBooks = () => {
@@ -81,7 +99,7 @@ const AddBook = () => {
       <div>
         {books.map((book) => (
           <div
-            key={book.id}
+            key={book._id}
             className="flex flex-col gap-5 items-start justify-between p-5 border border-gray-200"
           >
             <div>
@@ -97,7 +115,7 @@ const AddBook = () => {
               <strong>Description:</strong> {book.description}
             </div>
             <div className="flex gap-3">
-              <button onClick={() => editBook(book)}>Edit</button>
+              <button onClick={() => setEditForm(book)}>Edit</button>
               <button onClick={() => deleteBook(book._id)}>Delete</button>
             </div>
           </div>
@@ -153,7 +171,9 @@ const AddBook = () => {
           <span className="text-red-500">{errors.description}</span>
         )}
       </div>
-      <button onClick={formSubmit}>Add Book</button>
+      <button onClick={formSubmit}>
+        {!!isEditId ? "Edit Book" : "Add Book"}
+      </button>
 
       <div className="mt-5">
         <h2>Books List</h2>
