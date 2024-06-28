@@ -18,8 +18,8 @@ const bookSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    publish_date: {
-      type: Date,
+    published_date: {
+      type: String,
       required: true,
     },
   },

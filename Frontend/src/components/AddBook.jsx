@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+const BASE_URL = "http://localhost:3030/book";
+
 const AddBook = () => {
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
+  const [books, setBooks] = useState([]);
 
   const fetchBooks = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:3030/");
-      setBooks(response.data);
-      console.log("Books fetched successfully:", response.data);
+      const response = await axios.get(
+        `${BASE_URL}/getAll?search=&page=1&limit=10`
+      );
+      setBooks(response.data.books);
     } catch (error) {
       console.error("Error fetching books:", error);
     }
@@ -46,18 +50,61 @@ const AddBook = () => {
     }
 
     try {
-      const response = await axios.post("127.0.0.1:3030/book/add", form);
+      const response = await axios.post(`${BASE_URL}/add`, form);
       console.log("Form submitted successfully:", response.data);
       setForm({});
       setErrors({});
+      fetchBooks();
     } catch (error) {
       console.error("Error submitting form:", error);
     }
   };
 
-  useEffect(() => {
-    console.log("form", form);
-  }, [form]);
+  const deleteBook = async (id) => {
+    try {
+      const response = await axios.delete(`${BASE_URL}/delete`, {
+        params: { id },
+      });
+      console.log("Book deleted successfully:", response.data);
+      fetchBooks();
+    } catch (error) {
+      console.error("Error deleting book:", error);
+    }
+  };
+
+  const editBook = (book) => {
+    setForm(book);
+  };
+
+  const renderBooks = () => {
+    return (
+      <div>
+        {books.map((book) => (
+          <div
+            key={book.id}
+            className="flex flex-col gap-5 items-start justify-between p-5 border border-gray-200"
+          >
+            <div>
+              <strong>Name:</strong> {book.name}
+            </div>
+            <div>
+              <strong>Price:</strong> {book.price}
+            </div>
+            <div>
+              <strong>Published Date:</strong> {book.published_date}
+            </div>
+            <div>
+              <strong>Description:</strong> {book.description}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => editBook(book)}>Edit</button>
+              <button onClick={() => deleteBook(book._id)}>Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 items-start justify-between p-10 border border-white">
@@ -107,6 +154,11 @@ const AddBook = () => {
         )}
       </div>
       <button onClick={formSubmit}>Add Book</button>
+
+      <div className="mt-5">
+        <h2>Books List</h2>
+        {renderBooks()}
+      </div>
     </div>
   );
 };

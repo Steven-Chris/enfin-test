@@ -11,10 +11,11 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// app.use(cors());
 app.use(
   cors({
     origin: "http://localhost:5173",
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
   })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
